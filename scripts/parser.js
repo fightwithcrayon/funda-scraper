@@ -3,7 +3,8 @@
 const cheerio = require('cheerio');
 const fs = require('fs');
 
-const fundaKoopDir = '/root/Desktop/Funda/Koop/';
+const fundaKoopDir = process.env.NODE_ENV === 'development' ? './test/' : '/root/Desktop/Funda/Koop/';
+const outputTeKoop = process.env.NODE_ENV === 'development' ? './testOutput.json' : '/root/Desktop/teKoop.json';
 
 // Search for all files in Koop and Huur
 const filesFundaTeKoop = fs.readdirSync(fundaKoopDir);
@@ -11,7 +12,6 @@ const filesFundaTeKoop = fs.readdirSync(fundaKoopDir);
 // Filter all files that end with .html
 const htmlTeKoop = filesFundaTeKoop.filter(file => file.endsWith('.html')).map(file => fundaKoopDir + file);
 
-const outputTeKoop = '/root/Desktop/teKoop.json';
 
 // Build the GeoJson output file
 buildOutputFile('Te Koop', outputTeKoop, htmlTeKoop);
@@ -50,88 +50,45 @@ function buildOutputFile(title, outputFile, htmlPages) {
  * @param {array} htmlPages The html pages to parse
  */
 function parseFundaPages(htmlPages) {
-    const features = [];
-
-    htmlPages.forEach(page => {
+    const features = htmlPages.reduce((total, page) => {
         console.log(`Parsing file: ${page}`);
         const data = fs.readFileSync(page, 'utf8');
         const $ = cheerio.load(data);
+        const results = $('.search-result-content-inner').toArray().map((parent) => {
+            const address = $('.search-result__header-title', parent).text();
+            const numberIndex = address.search(/\d/);
+            const street = address.slice(0, numberIndex);
+            const number = address.slice(numberIndex);
 
-        $('.search-result-content-inner').each((index, elem) => {
-            const searchResultHeader = elem.children.find(child => child.attribs && child.attribs.class.indexOf('search-result__header') !== -1);
-            if (searchResultHeader != null) {
-                const searchResultHeaderTitle = searchResultHeader.children.find(child => child.attribs && child.attribs.class.indexOf('search-result__header-title-col') !== -1);
-                const searchResultInfoPrijs = elem.children.find(child => child.attribs && child.attribs.class === 'search-result-info search-result-info-price');
-                const searchResultInfo = elem.children.find(child => child.attribs && child.attribs.class === 'search-result-info');
+            const subtitle = $('.search-result__header-subtitle', parent).text().trim().split(' ');
+            const postcode = `${subtitle[0]}${subtitle[1]}`;
+            const city = `${subtitle[2]}`;
 
-                const url = getFundaUrl(searchResultHeaderTitle);
-                const adresPlaats = getFundaAdresPlaats(searchResultHeaderTitle).split(',');
-                const adres = adresPlaats[0].trim().split(' ');
-                const plaats = adresPlaats[1].trim();
+            const price = $('.search-result-price', parent).text().replace('€ ', '').replace(' k.k.', '')
+            const details = $('.search-result-kenmerken li', parent).toArray().map((el, i) => el.children[0].nodeValue);
+            const size = $('.search-result-kenmerken span', parent).text().replace(' m²', '');
+            const rooms = $('.search-result-kenmerken li:nth-child(2)', parent).text();
 
-                let adresEnd = 0;
-                let straat = '';
-                for (let adr in adres) {
-                    if (!isNaN(adres[adr])) {
-                        adresEnd = adr;
-                        break;
-                    }
-                    straat += adres[adr] + ' ';
-                    adresEnd++;
+            return {
+                'type': 'Feature',
+                'properties': {
+                    'Straat': street.trim(),
+                    'Nummer': number.trim(),
+                    'Plaats': city.trim(),
+                    'Postcode': postcode.trim(),
+                    'Price': price.trim().replace('.', ''),
+                    'Agent': $('.search-result-makelaar-name', parent).text().trim(),
+                    'URL': $('.search-result__header-title-col a:first-child', parent).attr('href').trim(),
+                    'Size': size.trim(),
+                    'Rooms': rooms.trim(),
+                },
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': []
                 }
-                straat = straat.trim();
-
-                let nummer = '';
-                for (; adresEnd < adres.length; adresEnd++) {
-                    nummer += adres[adresEnd] + ' ';
-                }
-                nummer = nummer.trim();
-
-                const oppervlakte = getFundaOppervlakte(searchResultInfo);
-                const prijs = getFundaPrijs(searchResultInfoPrijs);
-
-                const feature = JSON.stringify({
-                    'type': 'Feature',
-                    'properties': {
-                        'Straat': straat,
-                        'Nummer': nummer,
-                        'Plaats': plaats,
-                        'Oppervlakte': oppervlakte,
-                        'Prijs': prijs,
-                        'URL': url
-                    },
-                    'geometry': {
-                        'type': 'Point',
-                        'coordinates': []
-                    }
-                });
-                features.push(JSON.parse(feature));
             }
-        });
+        }, []);
+        return [...total, ...results];
     });
-
     return features;
-}
-
-function getFundaAdresPlaats(searchResultHeader) {
-    return searchResultHeader.children.find(child => child.type === 'tag' && child.name === 'a' &&
-            child.children.find(subChild => subChild.attribs && subChild.attribs.class.indexOf('search-result__header-title') !== -1))
-        .children.find(child => child.attribs && child.attribs.class.indexOf('search-result__header-title') !== -1)
-        .children.find(child => child.type === 'text').data.trim();
-}
-
-function getFundaOppervlakte(searchResultInfo) {
-    const kenmerken = searchResultInfo.children.find(child => child.type === 'tag' && child.attribs && child.attribs.class.indexOf('search-result-kenmerken') !== -1)
-            .children.find(child => child.type === 'tag' && child.name === 'li');
-    const oppervlakteTag = kenmerken && kenmerken.children.find(child => child.type === 'tag' && child.attribs && child.attribs.title === 'Oppervlakte');
-    return oppervlakteTag ? oppervlakteTag.children.find(child => child.type === 'text').data.trim() : '';
-}
-
-function getFundaUrl(searchResultHeader) {
-    return searchResultHeader.children.find(child => child.type === 'tag' && child.name === 'a' && !!child.attribs.href).attribs.href;
-}
-
-function getFundaPrijs(searchResultInfoPrijs) {
-    return searchResultInfoPrijs.children.find(child => child.type === 'tag' && child.attribs && child.attribs.class === 'search-result-price')
-        .children.find(child => child.type === 'text').data.trim();
 }

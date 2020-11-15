@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Load gemeente naam
-. /etc/gemeente
-
 echo Scraper started: $(date)
 
 if [ -d /root/Desktop/Funda ]; then
@@ -13,11 +10,15 @@ fi
 echo "Creating Funda directories ..."
 mkdir -p /root/Desktop/Funda/Koop
 
-for i in {1..5}
+for i in {1..100}
 do
     echo "Download Funda page $i"
-    /root/Desktop/savePages.sh "https://www.funda.nl/koop/1012xa/350000-450000/50+woonopp/2+kamers/+3km/p$i/" -b "firefox" -d "/root/Desktop/Funda/Koop/page$i.html"
-    sleep 5s
+    FILE="/root/Desktop/Funda/Koop/page$i.html"
+    /root/Desktop/savePages.sh "https://www.funda.nl/koop/1012xa/350000-450000/50+woonopp/2+kamers/+3km/p$i/" -b "firefox" -d "$FILE"
+    if grep -q "Kies een groter gebied" "$FILE"; then
+        break
+    fi
+    sleep 4s
 done
 
 echo "Finished downloading pages ..."
@@ -25,7 +26,7 @@ echo "------------------------------"
 echo "Parsing downloaded pages ..."
 
 nodejs /root/Desktop/parser.js
-sleep 5s
+sleep 4s
 
 echo "Parsing finished ..."
 echo "------------------------------"

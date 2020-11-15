@@ -6,7 +6,7 @@ volumes:
 services:
   funda-scraper:
     restart: always
-    image: fightwithcrayon/funda-scraper
+    build: .
     ports:
       - "8080:80"
     volumes:

@@ -5,6 +5,9 @@
   "main": "parser.js",
   "author": "IDgis bv",
   "license": "ISC",
+  "scripts": {
+    "parse": "NODE_ENV=development node scripts/parser.js"
+  },
   "dependencies": {
     "@turf/boolean-within": "^6.0.1",
     "@turf/turf": "^5.1.6",

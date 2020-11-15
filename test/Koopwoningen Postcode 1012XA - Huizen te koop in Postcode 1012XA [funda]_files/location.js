@@ -1,0 +1,1 @@
+jsonFeed({"country":"NL","state":"NH","stateName":"North Holland","zipcode":"1015","timezone":"Europe/Amsterdam","latitude":"52.37950","longitude":"4.87770","city":"Amsterdam","continent":"EU"});
