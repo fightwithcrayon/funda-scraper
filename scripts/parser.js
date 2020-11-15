@@ -4,22 +4,17 @@ const cheerio = require('cheerio');
 const fs = require('fs');
 
 const fundaKoopDir = '/root/Desktop/Funda/Koop/';
-const fundaHuurDir = '/root/Desktop/Funda/Huur/';
 
 // Search for all files in Koop and Huur
 const filesFundaTeKoop = fs.readdirSync(fundaKoopDir);
-const filesFundaTeHuur = fs.readdirSync(fundaHuurDir);
 
 // Filter all files that end with .html
 const htmlTeKoop = filesFundaTeKoop.filter(file => file.endsWith('.html')).map(file => fundaKoopDir + file);
-const htmlTeHuur = filesFundaTeHuur.filter(file => file.endsWith('.html')).map(file => fundaHuurDir + file);
 
 const outputTeKoop = '/root/Desktop/teKoop.json';
-const outputTeHuur = '/root/Desktop/teHuur.json';
 
 // Build the GeoJson output file
 buildOutputFile('Te Koop', outputTeKoop, htmlTeKoop);
-buildOutputFile('Te Huur', outputTeHuur, htmlTeHuur);
 
 /**
  * Parses all html files from the input and turns them into GeoJson

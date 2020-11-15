@@ -1,5 +1,4 @@
 ./node_modules
 ./Funda
-./vastgoedTeHuur.json
-./vastgoedTeKoop.json
+./teKoop.json
 ./ubuntu-desktop

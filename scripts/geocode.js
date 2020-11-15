@@ -5,10 +5,8 @@ const request = require('request');
 const fs = require('fs');
 
 const locationTeKoop = '/root/Desktop/teKoop.json';
-const locationTeHuur = '/root/Desktop/teHuur.json';
 
 geocode(locationTeKoop);
-geocode(locationTeHuur);
 
 function geocode(fileLocation) {
     const inputFile = fs.readFileSync(fileLocation, 'utf8');

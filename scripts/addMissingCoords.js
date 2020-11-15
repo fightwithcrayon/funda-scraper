@@ -3,10 +3,8 @@
 const fs = require('fs');
 
 const locationTeKoop = '/root/Desktop/teKoop.json';
-const locationTeHuur = '/root/Desktop/teHuur.json';
 
 addMissingCoords(locationTeKoop);
-addMissingCoords(locationTeHuur);
 
 function addMissingCoords(fileLocation) {
     const inputFile = fs.readFileSync(fileLocation, 'utf8');

@@ -12,16 +12,11 @@ fi
 
 echo "Creating Funda directories ..."
 mkdir -p /root/Desktop/Funda/Koop
-mkdir -p /root/Desktop/Funda/Huur
 
 for i in {1..5}
 do
-    echo "Download Funda $GEMEENTE te koop page $i"
-    /root/Desktop/savePages.sh "https://fundainbusiness.nl/alle-bedrijfsaanbod/$GEMEENTE/koop/p$i/" -b "firefox" -d "/root/Desktop/Funda/Koop/$GEMEENTE$i.html"
-    sleep 5s
-
-    echo "Download Funda $GEMEENTE te huur page $i"
-    /root/Desktop/savePages.sh "https://fundainbusiness.nl/alle-bedrijfsaanbod/$GEMEENTE/huur/p$i/" -b "firefox" -d "/root/Desktop/Funda/Huur/$GEMEENTE$i.html"
+    echo "Download Funda page $i"
+    /root/Desktop/savePages.sh "https://www.funda.nl/koop/1012xa/350000-450000/50+woonopp/2+kamers/+3km/p$i/" -b "firefox" -d "/root/Desktop/Funda/Koop/page$i.html"
     sleep 5s
 done
 
@@ -45,12 +40,7 @@ sleep 5s
 if [ "$VALID" == "true" ]; then
     echo "Geocoding finished ..."
 
-    nodejs /root/Desktop/separateByArea.js
-
-    cp /root/Desktop/teKoopBedrijf.json /home/meteorapp/build/bundle/programs/web.browser/app/data/vastgoedTeKoop.json
-    cp /root/Desktop/teKoopDetailhandel.json /home/meteorapp/build/bundle/programs/web.browser/app/data/detailhandelTeKoop.json
-    cp /root/Desktop/teHuurBedrijf.json /home/meteorapp/build/bundle/programs/web.browser/app/data/vastgoedTeHuur.json
-    cp /root/Desktop/teHuurDetailhandel.json /home/meteorapp/build/bundle/programs/web.browser/app/data/detailhandelTeHuur.json
+    cp /root/Desktop/teKoop.json /home/meteorapp/build/bundle/programs/web.browser/app/data/teKoop.json
 else
     echo "Some errors occured while geocoding ..."
     echo "Not saving results ..."
@@ -60,7 +50,6 @@ echo "------------------------------"
 echo "Cleaning up old files ..."
 
 rm /root/Desktop/teKoop*.json
-rm /root/Desktop/teHuur*.json
 
 if [ -d /root/Desktop/Funda ]; then
     rm -rf /root/Desktop/Funda

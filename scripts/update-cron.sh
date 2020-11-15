@@ -41,6 +41,5 @@ crontab -u root - <<EOF
   $FRIDAY_MINUTE $FRIDAY_HOUR *  *  5  /root/Desktop/start.sh >> /var/log/funda-scraper.log 2>&1
 
   00 0  *  *  6  /root/Desktop/update-cron.sh
-  00 1  *  *  6  /root/Desktop/update-bedrijventerreinen.sh
 # An empty line is required at the end of this file for a valid cron file.
 EOF

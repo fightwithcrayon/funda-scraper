@@ -4,7 +4,6 @@ const fs = require('fs');
 let validGeometry = true;
 
 validGeometry = validGeometry && validateGeometry('/root/Desktop/teKoop.json');
-validGeometry = validGeometry && validateGeometry('/root/Desktop/teHuur.json');
 
 function validateGeometry(fileLocation) {
     const inputFile = fs.readFileSync(fileLocation, 'utf8');
