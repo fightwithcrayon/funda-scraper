@@ -87,8 +87,8 @@ function parseFundaPages(htmlPages) {
                     'coordinates': []
                 }
             }
-        }, []);
+        });
         return [...total, ...results];
-    });
+    }, []);
     return features;
 }
